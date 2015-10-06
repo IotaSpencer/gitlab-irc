@@ -15,7 +15,14 @@ post '/commit' do
     socket = TCPSocket.open(IRC_HOST, IRC_PORT)
     socket.puts("NICK #{IRC_NICK}")
     socket.puts("USER #{IRC_NICK} 8 * : #{IRC_REALNAME}")
-    #socket.puts("JOIN #{IRC_CHANNEL}") # don't join, just send the msg directly
+    #socket.puts("JOIN #{IRC_CHANNEL}") # don't join, just send the msg directly -- make sure the channel is /mode -n
+    
+    # Don't send anything to the channel until we've been successfully authorized by the IRC server to do so
+    while line = socket.gets
+      if line.include? "376 #{IRC_NICK}"
+        break
+      end
+    end
 
     json = JSON.parse(request.env["rack.input"].read)
 
